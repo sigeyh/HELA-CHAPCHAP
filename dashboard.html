@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- META TAGS - complete set for SEO, social sharing, vercel compatible -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Primary meta tags -->
+  <title>Hela Chapchap · dashboard | your loan & savings</title>
+  <meta name="description" content="View your Hela Chapchap dashboard – current loan amount, required savings, and account details. Quick access to M-PESA.">
+  <meta name="keywords" content="hela chapchap dashboard, loan status, savings, mpesa, account overview">
+  <meta name="author" content="Hela Chapchap">
+  <meta name="robots" content="index, follow">
+  <!-- Open Graph / Facebook / WhatsApp -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://helachapchap.vercel.app/dashboard.html">
+  <meta property="og:title" content="Hela Chapchap · dashboard | loan & savings overview">
+  <meta property="og:description" content="Your personal dashboard – check loan amount, savings target, and account details.">
+  <meta property="og:image" content="https://placehold.co/600x400/0b2e26/f5b342?text=Hela+Dashboard">
+  <meta property="og:image:width" content="600">
+  <meta property="og:image:height" content="400">
+  <meta property="og:site_name" content="Hela Chapchap">
+  <!-- Twitter card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Hela Chapchap · dashboard">
+  <meta name="twitter:description" content="Quick view of your loan and savings.">
+  <meta name="twitter:image" content="https://placehold.co/600x400/0b2e26/f5b342?text=Hela+Dashboard">
+  <!-- theme & vercel friendly -->
+  <meta name="theme-color" content="#0b2e26">
+  <meta name="format-detection" content="telephone=no">
+  <!-- favicon (inline / emoji fallback) -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90' fill='%23f5b342'>💰</text></svg>">
+  <!-- styles & font awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    body {
+      background: linear-gradient(145deg, #f6f9fc 0%, #eef2f5 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+    }
+
+    .page-card {
+      max-width: 500px;
+      width: 100%;
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-radius: 3rem 3rem 2.5rem 2.5rem;
+      box-shadow: 0 25px 50px -12px rgba(0, 50, 40, 0.25), inset 0 1px 2px rgba(255,255,255,0.8);
+      border: 1px solid rgba(255,255,240,0.6);
+      overflow: hidden;
+    }
+
+    .header-gold {
+      background: #0b2e26;
+      padding: 2rem 2rem 1.5rem 2rem;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 4px solid #f5b342;
+    }
+    .logo-area {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+    }
+    .logo-icon {
+      font-size: 2.5rem;
+      color: #f5b342;
+    }
+    .logo-text {
+      font-size: 1.9rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+    .logo-text span {
+      color: #f5b342;
+      font-weight: 300;
+      font-size: 1.7rem;
+    }
+    .tagline {
+      background: rgba(255,255,255,0.08);
+      padding: 0.4rem 1rem;
+      border-radius: 60px;
+      font-size: 0.9rem;
+      border: 1px dashed #f5b34270;
+    }
+    .tagline i {
+      color: #f5d27e;
+    }
+
+    .content-pane {
+      padding: 2rem 2rem 2.2rem 2rem;
+    }
+
+    .page-title {
+      color: #0f2c25;
+      font-size: 1.8rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 1.5rem;
+    }
+    .page-title i {
+      color: #f5b342;
+      font-size: 2rem;
+    }
+
+    .info-card {
+      background: #eaf3ef;
+      border-radius: 2rem;
+      padding: 1.8rem;
+      text-align: center;
+      border: 1px solid #cde0d8;
+      box-shadow: inset 0 1px 5px white, 0 10px 15px -10px #1a3f35;
+    }
+    .info-label {
+      color: #3b5e51;
+      letter-spacing: 0.8px;
+      font-size: 1rem;
+      text-transform: uppercase;
+    }
+    .info-amount {
+      font-size: 3.5rem;
+      font-weight: 700;
+      color: #0b2e26;
+      line-height: 1.2;
+      margin: 0.5rem 0 0.2rem;
+    }
+    .saving-badge {
+      background: #f5b34230;
+      border-radius: 60px;
+      padding: 0.6rem 1.5rem;
+      font-weight: 600;
+      font-size: 1.4rem;
+      color: #2b4b1e;
+      border: 1px dashed #f5b342;
+      width: fit-content;
+      margin: 1rem auto;
+    }
+
+    .stats-row {
+      display: flex;
+      gap: 1rem;
+      justify-content: space-between;
+      margin: 1.5rem 0;
+    }
+    .stat-item {
+      background: white;
+      border-radius: 1.8rem;
+      padding: 1rem;
+      flex: 1;
+      text-align: center;
+      border: 1px solid #d3e2db;
+    }
+    .stat-value {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: #0b2e26;
+    }
+
+    .btn-gold {
+      background: #f5b342;
+      color: #0b2e26;
+      border: none;
+      width: 100%;
+      padding: 1rem;
+      font-size: 1.4rem;
+      font-weight: 600;
+      border-radius: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      cursor: pointer;
+      border: 1px solid #dc9f30;
+      transition: 0.15s;
+    }
+    .btn-gold:hover {
+      background: #fec868;
+    }
+
+    .step-indicator {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      margin-top: 1.8rem;
+      color: #accfc0;
+    }
+    .step-active {
+      color: #f5b342;
+      font-weight: 600;
+    }
+
+    .logout-btn {
+      background: none;
+      border: 1px solid #accfc0;
+      color: #0b2e26;
+      padding: 0.5rem 1rem;
+      border-radius: 40px;
+      cursor: pointer;
+      margin-top: 1rem;
+      width: 100%;
+    }
+
+    /* hidden canonical */
+    .hidden-meta-note {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <!-- canonical hint for search engines (hidden) -->
+  <a href="https://helachapchap.vercel.app/dashboard.html" rel="canonical" style="display:none;">canonical</a>
+
+  <div class="page-card">
+    <div class="header-gold">
+      <div class="logo-area">
+        <i class="fas fa-hand-holding-usd logo-icon"></i>
+        <div class="logo-text">Hela<span>Chapchap</span></div>
+      </div>
+      <div class="tagline">
+        <i class="fas fa-bolt"></i> pesa pevu
+      </div>
+    </div>
+
+    <div class="content-pane">
+      <!-- Changed page title to English: "your dashboard" -->
+      <div class="page-title"><i class="fas fa-tachometer-alt"></i> your dashboard</div>
+      
+      <div class="info-card">
+        <!-- changed labels to English -->
+        <div class="info-label">💸 your loan</div>
+        <div class="info-amount" id="dashboardLoan">KSH 0</div>
+        <div style="font-size: 1rem; color: #1b4e3b;">👇 required savings</div>
+        <div class="saving-badge" id="dashboardSaving">KSH 0</div>
+      </div>
+
+      <div class="stats-row">
+        <!-- stat items now show ID number instead of device -->
+        <div class="stat-item"><i class="fas fa-id-card"></i><br><span id="idDisplay">—</span></div>
+        <div class="stat-item"><i class="fas fa-user"></i><br><span id="nameDisplay">—</span></div>
+      </div>
+
+      <!-- button text in English -->
+      <button class="btn-gold" id="gotoMpesaBtn"><i class="fas fa-arrow-right"></i> get loan & M-PESA</button>
+
+      <div style="margin-top: 1.4rem; background: #daf1e6; border-radius: 40px; padding: 0.8rem; text-align: center; font-size: 0.9rem;">
+        <i class="fas fa-info-circle" style="color: #f5b342;"></i> amounts are device‑locked and don't change.
+      </div>
+
+      <button class="logout-btn" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> switch account</button>
+
+      <div class="step-indicator">
+        <i class="fas fa-circle"></i> <i class="fas fa-circle step-active"></i> <i class="fas fa-circle"></i>
+      </div>
+      <p style="text-align: center; margin-top: 1.2rem;">step 2/3</p>
+    </div>
+  </div>
+
+  <script>
+    // Redirect if no user (using ID now, but fallback to name check)
+    const name = localStorage.getItem('hela_reg_name');
+    const idNumber = localStorage.getItem('hela_reg_id'); // we now store ID from index
+
+    if (!name) {
+      window.location.href = 'index.html';
+    }
+
+    // Display loan and saving from localStorage (same as before)
+    const loan = localStorage.getItem('hela_loan_amount') || 2000;
+    const saving = localStorage.getItem('hela_saving_amount') || 100;
+    
+    // Use ID number instead of device – if not present fallback to '—'
+    const displayId = idNumber || '—';
+    
+    document.getElementById('dashboardLoan').innerText = `KSH ${loan}`;
+    document.getElementById('dashboardSaving').innerText = `KSH ${saving}`;
+    document.getElementById('idDisplay').innerText = displayId;   // shows ID number
+    document.getElementById('nameDisplay').innerText = name.split(' ')[0] || name;
+
+    document.getElementById('gotoMpesaBtn').addEventListener('click', function() {
+      window.location.href = 'mpesa.html';
+    });
+
+    document.getElementById('logoutBtn').addEventListener('click', function() {
+      localStorage.clear(); // Clear all data
+      window.location.href = 'index.html';
+    });
+  </script>
+
+  <!-- structured data for rich previews (SEO / vercel friendly) -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "name": "Hela Chapchap Dashboard",
+    "description": "Personal dashboard showing loan amount, savings target, and account details.",
+    "url": "https://helachapchap.vercel.app/dashboard.html",
+    "provider": {
+      "@type": "Organization",
+      "name": "Hela Chapchap",
+      "logo": "https://placehold.co/150x150/0b2e26/f5b342?text=HC"
+    }
+  }
+  </script>
+</body>
+</html>
