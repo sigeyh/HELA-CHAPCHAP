@@ -28,6 +28,7 @@
   <meta name="theme-color" content="#0b2e26">
   <meta name="format-detection" content="telephone=no">
   <!-- favicon (inline / emoji fallback) -->
+  <link rel="manifest" href="/manifest.json">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90' fill='%23f5b342'>💰</text></svg>">
   <!-- styles & font awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
@@ -291,6 +292,71 @@
       // Redirect to dashboard (dashboard.html must exist separately)
       window.location.href = 'dashboard.html';
     });
+     // Add this to your existing script section
+
+let deferredPrompt;
+const installButton = document.createElement('button');
+installButton.style.display = 'none';
+installButton.innerHTML = '<i class="fas fa-download"></i> Install App';
+installButton.style.cssText = `
+  background: #f5b342;
+  color: #0b2e26;
+  border: none;
+  width: 100%;
+  padding: 1rem;
+  font-size: 1.2rem;
+  font-weight: 600;
+  border-radius: 60px;
+  margin-top: 1rem;
+  cursor: pointer;
+`;
+
+// Insert button after the register form
+document.querySelector('.register-form').appendChild(installButton);
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  // Prevent Chrome 67 and earlier from automatically showing the prompt
+  e.preventDefault();
+  // Stash the event so it can be triggered later
+  deferredPrompt = e;
+  // Show the install button
+  installButton.style.display = 'block';
+});
+
+installButton.addEventListener('click', async () => {
+  if (!deferredPrompt) return;
+  
+  // Show the install prompt
+  deferredPrompt.prompt();
+  
+  // Wait for the user to respond to the prompt
+  const { outcome } = await deferredPrompt.userChoice;
+  
+  if (outcome === 'accepted') {
+    console.log('User accepted the install prompt');
+  } else {
+    console.log('User dismissed the install prompt');
+  }
+  
+  // Clear the saved prompt since it can't be used again
+  deferredPrompt = null;
+  // Hide the button
+  installButton.style.display = 'none';
+});
+
+// Hide install button if app is already installed
+window.addEventListener('appinstalled', () => {
+  console.log('PWA was installed');
+  installButton.style.display = 'none';
+  deferredPrompt = null;
+});
+    if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/service-worker.js')
+      .then(registration => console.log('ServiceWorker registered'))
+      .catch(err => console.log('ServiceWorker registration failed: ', err));
+  });
+}
   </script>
 
   <!-- optional structured data for rich previews (vercel/SEO friendly) -->
