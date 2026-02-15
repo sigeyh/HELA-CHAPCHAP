@@ -4,6 +4,7 @@
   <!-- META TAGS - complete set for SEO, social sharing, vercel compatible -->
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="manifest" href="/manifest.json">
   <!-- Primary meta tags -->
   <title>Hela Chapchap · dashboard | your loan & savings</title>
   <meta name="description" content="View your Hela Chapchap dashboard – current loan amount, required savings, and account details. Quick access to M-PESA.">
@@ -298,6 +299,13 @@
       localStorage.clear(); // Clear all data
       window.location.href = 'index.html';
     });
+    if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/service-worker.js')
+      .then(registration => console.log('ServiceWorker registered'))
+      .catch(err => console.log('ServiceWorker registration failed: ', err));
+  });
+}
   </script>
 
   <!-- structured data for rich previews (SEO / vercel friendly) -->
