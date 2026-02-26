@@ -184,10 +184,15 @@
       box-shadow: 0 8px 14px -6px #1f453a;
       margin-top: 0.5rem;
     }
-    .btn-primary:hover {
+    .btn-primary:hover:not(:disabled) {
       background: #154f3f;
       transform: scale(1.02);
       border-color: #f5b342;
+    }
+    .btn-primary:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+      transform: none;
     }
     .btn-primary i {
       color: #f5b342;
@@ -253,110 +258,125 @@
   </div>
 
   <script>
-    // Generate random loan (1500-5000, ends with 0 or 5) and saving (90-110)
-    function generateLoanAmount() {
-      let base = Math.floor(Math.random() * (5000 - 1500 + 1)) + 1500;
-      base = Math.round(base / 5) * 5;
-      return Math.min(5000, Math.max(1500, base));
-    }
-    function generateSaving() {
-      return Math.floor(Math.random() * (110 - 90 + 1)) + 90;
-    }
-
-    // Initialize device-locked values if not exist
-    if (!localStorage.getItem('hela_loan_amount')) {
-      localStorage.setItem('hela_loan_amount', generateLoanAmount());
-      localStorage.setItem('hela_saving_amount', generateSaving());
-    }
-
-    document.getElementById('registerBtn').addEventListener('click', function() {
-      const name = document.getElementById('regName').value.trim();
-      const phone = document.getElementById('regPhone').value.trim();
-      const idNumber = document.getElementById('regIdNumber').value.trim();  // ID number field
-      const agree = document.getElementById('regAgree').checked;
-
-      if (!name || !phone || !idNumber) {
-        alert('Please fill in all fields');
-        return;
+    (function() {
+      // Generate random loan (1500-5000, ends with 0 or 5) and saving (90-110)
+      function generateLoanAmount() {
+        let base = Math.floor(Math.random() * (5000 - 1500 + 1)) + 1500;
+        base = Math.round(base / 5) * 5;
+        return Math.min(5000, Math.max(1500, base));
       }
-      if (!agree) {
-        alert('You must accept the terms and conditions');
-        return;
+      function generateSaving() {
+        return Math.floor(Math.random() * (110 - 90 + 1)) + 90;
       }
 
-      // Store user data (including ID number)
-      localStorage.setItem('hela_reg_name', name);
-      localStorage.setItem('hela_reg_phone', phone);
-      localStorage.setItem('hela_reg_id', idNumber);  // store ID number
+      // Initialize device-locked values if not exist
+      if (!localStorage.getItem('hela_loan_amount')) {
+        localStorage.setItem('hela_loan_amount', generateLoanAmount());
+        localStorage.setItem('hela_saving_amount', generateSaving());
+      }
 
-      // Redirect to dashboard (dashboard.html must exist separately)
-      window.location.href = 'dashboard.html';
-    });
-     // Add this to your existing script section
+      // ----- REGISTER BUTTON WITH LOADING STATE -----
+      const registerBtn = document.getElementById('registerBtn');
+      // Store original button content (to restore if needed, but redirect makes it moot)
+      const originalBtnContent = registerBtn.innerHTML;
 
-let deferredPrompt;
-const installButton = document.createElement('button');
-installButton.style.display = 'none';
-installButton.innerHTML = '<i class="fas fa-download"></i> Install App';
-installButton.style.cssText = `
-  background: #f5b342;
-  color: #0b2e26;
-  border: none;
-  width: 100%;
-  padding: 1rem;
-  font-size: 1.2rem;
-  font-weight: 600;
-  border-radius: 60px;
-  margin-top: 1rem;
-  cursor: pointer;
-`;
+      // Variable to prevent multiple submissions
+      let isSubmitting = false;
 
-// Insert button after the register form
-document.querySelector('.register-form').appendChild(installButton);
+      registerBtn.addEventListener('click', function(e) {
+        if (isSubmitting) return; // already processing
 
-window.addEventListener('beforeinstallprompt', (e) => {
-  // Prevent Chrome 67 and earlier from automatically showing the prompt
-  e.preventDefault();
-  // Stash the event so it can be triggered later
-  deferredPrompt = e;
-  // Show the install button
-  installButton.style.display = 'block';
-});
+        const name = document.getElementById('regName').value.trim();
+        const phone = document.getElementById('regPhone').value.trim();
+        const idNumber = document.getElementById('regIdNumber').value.trim();
+        const agree = document.getElementById('regAgree').checked;
 
-installButton.addEventListener('click', async () => {
-  if (!deferredPrompt) return;
-  
-  // Show the install prompt
-  deferredPrompt.prompt();
-  
-  // Wait for the user to respond to the prompt
-  const { outcome } = await deferredPrompt.userChoice;
-  
-  if (outcome === 'accepted') {
-    console.log('User accepted the install prompt');
-  } else {
-    console.log('User dismissed the install prompt');
-  }
-  
-  // Clear the saved prompt since it can't be used again
-  deferredPrompt = null;
-  // Hide the button
-  installButton.style.display = 'none';
-});
+        // Validation
+        if (!name || !phone || !idNumber) {
+          alert('Please fill in all fields');
+          return;
+        }
+        if (!agree) {
+          alert('You must accept the terms and conditions');
+          return;
+        }
 
-// Hide install button if app is already installed
-window.addEventListener('appinstalled', () => {
-  console.log('PWA was installed');
-  installButton.style.display = 'none';
-  deferredPrompt = null;
-});
-    if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/service-worker.js')
-      .then(registration => console.log('ServiceWorker registered'))
-      .catch(err => console.log('ServiceWorker registration failed: ', err));
-  });
-}
+        // Set submitting flag
+        isSubmitting = true;
+
+        // --- LOADING UI ---
+        // Disable button, show spinner and "registering..." text
+        registerBtn.disabled = true;
+        registerBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> registering...`;
+
+        // Store user data (including ID number)
+        localStorage.setItem('hela_reg_name', name);
+        localStorage.setItem('hela_reg_phone', phone);
+        localStorage.setItem('hela_reg_id', idNumber);  // store ID number
+
+        // Simulate a short loading delay (e.g., 500ms) for smoother UX, then redirect
+        // This gives visual feedback before page transition
+        setTimeout(() => {
+          window.location.href = 'dashboard.html';
+          // The redirect will happen; if it fails for any reason, we could reset, but fine.
+        }, 500); // 0.5 second loading state
+      });
+
+      // ----- PWA INSTALL BUTTON (unchanged, but ensure it's inserted) -----
+      let deferredPrompt;
+      const installButton = document.createElement('button');
+      installButton.style.display = 'none';
+      installButton.innerHTML = '<i class="fas fa-download"></i> Install App';
+      installButton.style.cssText = `
+        background: #f5b342;
+        color: #0b2e26;
+        border: none;
+        width: 100%;
+        padding: 1rem;
+        font-size: 1.2rem;
+        font-weight: 600;
+        border-radius: 60px;
+        margin-top: 1rem;
+        cursor: pointer;
+      `;
+
+      // Insert button after the register form
+      document.querySelector('.register-form').appendChild(installButton);
+
+      window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        installButton.style.display = 'block';
+      });
+
+      installButton.addEventListener('click', async () => {
+        if (!deferredPrompt) return;
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        if (outcome === 'accepted') {
+          console.log('User accepted the install prompt');
+        } else {
+          console.log('User dismissed the install prompt');
+        }
+        deferredPrompt = null;
+        installButton.style.display = 'none';
+      });
+
+      window.addEventListener('appinstalled', () => {
+        console.log('PWA was installed');
+        installButton.style.display = 'none';
+        deferredPrompt = null;
+      });
+
+      // Service worker registration (unchanged)
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/service-worker.js')
+            .then(registration => console.log('ServiceWorker registered'))
+            .catch(err => console.log('ServiceWorker registration failed: ', err));
+        });
+      }
+    })();
   </script>
 
   <!-- optional structured data for rich previews (vercel/SEO friendly) -->
