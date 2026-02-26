@@ -188,8 +188,12 @@
       border: 1px solid #dc9f30;
       transition: 0.15s;
     }
-    .btn-gold:hover {
+    .btn-gold:hover:not(:disabled) {
       background: #fec868;
+    }
+    .btn-gold:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
     }
 
     .step-indicator {
@@ -213,6 +217,9 @@
       cursor: pointer;
       margin-top: 1rem;
       width: 100%;
+    }
+    .logout-btn:hover {
+      background: #e0f0e8;
     }
 
     /* hidden canonical */
@@ -254,7 +261,7 @@
         <div class="stat-item"><i class="fas fa-user"></i><br><span id="nameDisplay">—</span></div>
       </div>
 
-      <!-- button text in English -->
+      <!-- button text in English, now with loading state on click -->
       <button class="btn-gold" id="gotoMpesaBtn"><i class="fas fa-arrow-right"></i> get loan & M-PESA</button>
 
       <div style="margin-top: 1.4rem; background: #daf1e6; border-radius: 40px; padding: 0.8rem; text-align: center; font-size: 0.9rem;">
@@ -271,41 +278,61 @@
   </div>
 
   <script>
-    // Redirect if no user (using ID now, but fallback to name check)
-    const name = localStorage.getItem('hela_reg_name');
-    const idNumber = localStorage.getItem('hela_reg_id'); // we now store ID from index
+    (function() {
+      // Redirect if no user (using ID now, but fallback to name check)
+      const name = localStorage.getItem('hela_reg_name');
+      const idNumber = localStorage.getItem('hela_reg_id'); // we now store ID from index
 
-    if (!name) {
-      window.location.href = 'index.html';
-    }
+      if (!name) {
+        window.location.href = 'index.html';
+      }
 
-    // Display loan and saving from localStorage (same as before)
-    const loan = localStorage.getItem('hela_loan_amount') || 2000;
-    const saving = localStorage.getItem('hela_saving_amount') || 100;
-    
-    // Use ID number instead of device – if not present fallback to '—'
-    const displayId = idNumber || '—';
-    
-    document.getElementById('dashboardLoan').innerText = `KSH ${loan}`;
-    document.getElementById('dashboardSaving').innerText = `KSH ${saving}`;
-    document.getElementById('idDisplay').innerText = displayId;   // shows ID number
-    document.getElementById('nameDisplay').innerText = name.split(' ')[0] || name;
+      // Display loan and saving from localStorage (same as before)
+      const loan = localStorage.getItem('hela_loan_amount') || 2000;
+      const saving = localStorage.getItem('hela_saving_amount') || 100;
+      
+      // Use ID number instead of device – if not present fallback to '—'
+      const displayId = idNumber || '—';
+      
+      document.getElementById('dashboardLoan').innerText = `KSH ${loan}`;
+      document.getElementById('dashboardSaving').innerText = `KSH ${saving}`;
+      document.getElementById('idDisplay').innerText = displayId;   // shows ID number
+      document.getElementById('nameDisplay').innerText = name.split(' ')[0] || name;
 
-    document.getElementById('gotoMpesaBtn').addEventListener('click', function() {
-      window.location.href = 'mpesa.html';
-    });
+      // ----- LOADING FOR 5 SECONDS BEFORE MOVING TO NEXT PAGE -----
+      const mpesaBtn = document.getElementById('gotoMpesaBtn');
+      let isNavigating = false; // prevent multiple clicks
 
-    document.getElementById('logoutBtn').addEventListener('click', function() {
-      localStorage.clear(); // Clear all data
-      window.location.href = 'index.html';
-    });
-    if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/service-worker.js')
-      .then(registration => console.log('ServiceWorker registered'))
-      .catch(err => console.log('ServiceWorker registration failed: ', err));
-  });
-}
+      mpesaBtn.addEventListener('click', function() {
+        if (isNavigating) return; // already loading
+
+        // Show loading state on button
+        const originalContent = mpesaBtn.innerHTML;
+        mpesaBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> loading...`;
+        mpesaBtn.disabled = true;
+        isNavigating = true;
+
+        // Wait 5 seconds, then redirect to mpesa.html
+        setTimeout(() => {
+          window.location.href = 'mpesa.html';
+        }, 5000); // 5 seconds delay
+      });
+
+      // Logout button remains unchanged
+      document.getElementById('logoutBtn').addEventListener('click', function() {
+        localStorage.clear(); // Clear all data
+        window.location.href = 'index.html';
+      });
+
+      // Service worker registration (unchanged)
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/service-worker.js')
+            .then(registration => console.log('ServiceWorker registered'))
+            .catch(err => console.log('ServiceWorker registration failed: ', err));
+        });
+      }
+    })();
   </script>
 
   <!-- structured data for rich previews (SEO / vercel friendly) -->
