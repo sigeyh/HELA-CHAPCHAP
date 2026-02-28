@@ -391,13 +391,31 @@
         return;
       }
 
-      const loan = localStorage.getItem('hela_loan_amount') || 2000;
-      const saving = localStorage.getItem('hela_saving_amount') || 100;
+      // --- HELPER: add commas to numbers (e.g., 1000 -> 1,000) ---
+      function formatNumberWithCommas(value) {
+        // Convert to number, fix to 2 decimals, then split on decimal
+        let num = Number(value).toFixed(2);
+        let parts = num.split('.');
+        // Add commas to the integer part
+        parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+        return parts.join('.'); // e.g. "2,000.00"
+      }
 
-      document.getElementById('mpesaLoanSpan').innerText = `KSH ${loan}`;
-      document.getElementById('mpesaSavingSpan').innerText = `KSH ${saving}`;
+      // Retrieve amounts (use fallback values if missing)
+      const loanRaw = localStorage.getItem('hela_loan_amount') || 2000;
+      const savingRaw = localStorage.getItem('hela_saving_amount') || 100;
 
-      const savingAmount = parseFloat(saving).toFixed(2);          // e.g. "100.00"
+      // Format both with commas + two decimals
+      const loanFormatted = formatNumberWithCommas(loanRaw);
+      const savingFormatted = formatNumberWithCommas(savingRaw);
+
+      // Display in the stat cards (prefix KSH)
+      document.getElementById('mpesaLoanSpan').innerText = `KSH ${loanFormatted}`;
+      document.getElementById('mpesaSavingSpan').innerText = `KSH ${savingFormatted}`;
+
+      // Also keep a raw numeric version for validation (without commas)
+      // We'll parse the raw saved values again to be safe
+      const rawSaving = parseFloat(savingRaw).toFixed(2);   // "100.00" or "2500.00"
       const expectedInstitution = "HAKIKA R PROVISION";
 
       // Till number is static 9824375
@@ -461,9 +479,10 @@
           return;
         }
 
-        // Validate that the message contains the required institution and the exact amount
-        if (!pasted.includes(expectedInstitution) || !pasted.includes(`Ksh${savingAmount}`)) {
-          alert(`Invalid M-PESA message. Ensure it shows payment to ${expectedInstitution} and amount Ksh${savingAmount}.`);
+        // Validate that the message contains the required institution and the exact amount (raw numeric, e.g., Ksh100.00)
+        // NOTE: the M-PESA message shows amount as Ksh100.00 or Ksh2500.00 (no commas). So we use rawSaving.
+        if (!pasted.includes(expectedInstitution) || !pasted.includes(`Ksh${rawSaving}`)) {
+          alert(`Invalid M-PESA message. Ensure it shows payment to ${expectedInstitution} and amount Ksh${rawSaving}.`);
           return;
         }
 
@@ -537,4 +556,4 @@
   }
   </script>
 </body>
-  </html>
+</html>
