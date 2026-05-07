@@ -1,14 +1,10 @@
 import { db, auth } from '../firebase';
 import { 
-  collection, 
   doc, 
   setDoc, 
   updateDoc, 
   getDoc, 
-  serverTimestamp,
-  query,
-  where,
-  getDocs
+  serverTimestamp
 } from 'firebase/firestore';
 
 export interface LoanApplication {

@@ -4,7 +4,6 @@ import { generateReference } from '../services/payhero';
 
 const Verification = () => {
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   
   const name = sessionStorage.getItem('hakika_name') || 'Guest';
@@ -93,10 +92,9 @@ const Verification = () => {
       <button
         className="btn-premium"
         onClick={handleLipwa}
-        disabled={loading}
         style={{ background: 'var(--accent-emerald)', color: '#000', fontWeight: '800' }}
       >
-        {loading ? 'Processing...' : 'Authorize Disbursement'}
+        Authorize Disbursement
         <span style={{ fontSize: '20px' }}>→</span>
       </button>
 

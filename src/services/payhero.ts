@@ -1,7 +1,6 @@
 // Payhero STK Push integration
 const PAYHERO_API_KEY = import.meta.env.VITE_PAYHERO_API_KEY as string;
 const PAYHERO_CHANNEL_ID = Number(import.meta.env.VITE_PAYHERO_MERCHANT_ID); // Channel ID from dashboard
-const PAYHERO_TILL_NAME = 'HAKIKA R PROVISION';
 const LIPWA_LINK = 'https://lipwa.link/6902';
 
 // Route through Vite proxy to avoid CORS (see vite.config.ts)
