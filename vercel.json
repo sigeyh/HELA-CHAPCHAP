@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/payhero/:path*",
+      "destination": "https://backend.payhero.co.ke/api/v2/:path*"
+    }
+  ]
+}
