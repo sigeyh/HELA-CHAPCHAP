@@ -7,9 +7,10 @@ export default defineConfig({
   server: {
     proxy: {
       '/api/payhero': {
-        target: 'https://api.payhero.co.ke',
+        target: 'https://backend.payhero.co.ke',
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api\/payhero/, '/v1'),
+        secure: true,
+        rewrite: (path) => path.replace(/^\/api\/payhero/, '/api/v2'),
       },
     },
   },

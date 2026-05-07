@@ -1,12 +1,11 @@
 // Payhero STK Push integration
 const PAYHERO_API_KEY = import.meta.env.VITE_PAYHERO_API_KEY as string;
-const PAYHERO_MERCHANT_ID = import.meta.env.VITE_PAYHERO_MERCHANT_ID as string;
-const PAYHERO_TILL_NUMBER = import.meta.env.VITE_PAYHERO_TILL_NUMBER as string;
+const PAYHERO_CHANNEL_ID = Number(import.meta.env.VITE_PAYHERO_MERCHANT_ID); // Channel ID from dashboard
 const PAYHERO_TILL_NAME = 'HAKIKA R PROVISION';
-const LIPWA_LINK = 'https://short.payhero.co.ke/s/cNQKbWqAMQbmh72LRmLXmk';
+const LIPWA_LINK = 'https://lipwa.link/6902';
 
-// Use Vite proxy to avoid CORS issues
-const PAYHERO_BASE_URL = '/api/payhero';
+// Route through Vite proxy to avoid CORS (see vite.config.ts)
+const PAYHERO_API_URL = '/api/payhero/payments';
 
 interface STKPushResponse {
   success: boolean;
@@ -19,80 +18,164 @@ interface STKPushResponse {
   error?: string;
 }
 
-interface InitiateSTKPushParams {
-  phone: string;
-  amount: number;
-  reference?: string;
-  description?: string;
-}
+/**
+ * Generates a short, human-readable reference like "HELA-K3X7P"
+ */
+export const generateReference = (): string => {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  const suffix = Array.from({ length: 5 }, () =>
+    chars[Math.floor(Math.random() * chars.length)]
+  ).join('');
+  return `HELA-${suffix}`;
+};
 
-export const initiateSTKPush = async (
-  phone: string, 
+/**
+ * Normalises phone to 254XXXXXXXXX format
+ */
+const formatPhone = (phone: string): string => {
+  let p = phone.replace(/\s/g, '');
+  if (p.startsWith('0')) p = '254' + p.substring(1);
+  if (!p.startsWith('254')) p = '254' + p;
+  return p;
+};
+
+/**
+ * Returns the correct Authorization header.
+ * Trying raw API key as some versions of Payhero don't use 'Basic' or 'Bearer'.
+ */
+const getAuthHeader = (): string => {
+  return PAYHERO_API_KEY;
+};
+
+export { LIPWA_LINK };
+
+/**
+ * Builds a Lipwa URL with autofill query params.
+ */
+export const buildLipwaUrl = (
+  phone: string,
   amount: number,
-  reference?: string,
-  description?: string
-): Promise<STKPushResponse> => {
-  try {
-    // Format phone number (remove any spaces and ensure it starts with 254)
-    let formattedPhone = phone.replace(/\s/g, '');
-    if (formattedPhone.startsWith('0')) {
-      formattedPhone = '254' + formattedPhone.substring(1);
-    }
-    if (!formattedPhone.startsWith('254')) {
-      formattedPhone = '254' + formattedPhone;
-    }
+  name: string,
+  reference: string
+): string => {
+  const nameParts = name.trim().split(' ');
+  const firstName = nameParts[0] || '';
+  const lastName = nameParts.slice(1).join(' ') || firstName;
+  const formattedPhone = formatPhone(phone);
 
+  const params = new URLSearchParams({
+    // Shorthand params for lipwa.link
+    a: String(amount),
+    p: formattedPhone,
+    r: reference,
+    n: name,
+    auto: '1',
+    submit: '1',
+    // Full params
+    amount: String(amount),
+    phone: formattedPhone,
+    reference: reference,
+    name: name,
+    first_name: firstName,
+    last_name: lastName,
+    customer_name: name,
+    customer_phone: formattedPhone,
+    account: reference,
+  });
+  
+  return `${LIPWA_LINK}?${params.toString()}`;
+};
+
+/**
+ * Initiates an M-Pesa STK Push via Payhero API v2.
+ * - Sends the push directly to the user's phone (no Lipwa page needed).
+ * - Falls back to autofilled Lipwa link if the API call fails.
+ */
+export const initiateLipwa = async (
+  phone: string,
+  amount: number,
+  name: string = '',
+  reference?: string
+): Promise<STKPushResponse & { reference: string }> => {
+  const ref = reference || generateReference();
+  const formattedPhone = formatPhone(phone);
+
+  try {
+    // Payhero v2 STK Push payload — uses channel_id, not till_number
     const payload = {
+      amount,
       phone_number: formattedPhone,
-      amount: amount,
-      reference: reference || `HAKIKARPROVISION-${Date.now()}`,
-      description: description || `${PAYHERO_TILL_NAME} Service Fee`,
-      till_number: PAYHERO_TILL_NUMBER,
+      channel_id: PAYHERO_CHANNEL_ID,
+      till_number: String(PAYHERO_CHANNEL_ID),
+      merchant_id: String(PAYHERO_CHANNEL_ID),
+      external_reference: ref,
+      reference: ref,
+      provider: 'm-pesa',
+      callback_url: 'https://example.com',
     };
 
-    const response = await fetch(`${PAYHERO_BASE_URL}/payments`, {
+    console.log('[Payhero] Initiating STK Push:', { phone: formattedPhone, amount, ref, channel_id: PAYHERO_CHANNEL_ID });
+
+    const response = await fetch(PAYHERO_API_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${PAYHERO_API_KEY}`,
-        'Merchant-ID': PAYHERO_MERCHANT_ID,
+        'Authorization': getAuthHeader(),
+        'x-api-key': PAYHERO_API_KEY,
+        'Merchant-ID': String(PAYHERO_CHANNEL_ID),
       },
       body: JSON.stringify(payload),
     });
 
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || `HTTP error ${response.status}`);
+    const data = await response.json().catch(() => ({}));
+    console.log('[Payhero] Response:', response.status, data);
+
+    if (response.ok) {
+      // STK Push sent — user will get M-Pesa prompt on their phone
+      return {
+        success: true,
+        message: 'M-Pesa prompt sent to your phone',
+        reference: ref,
+        data: {
+          checkout_url: buildLipwaUrl(phone, amount, name, ref), // Fallback if needed
+          transaction_id: data.reference,
+        },
+      };
     }
 
-    const data = await response.json();
-    
+    // API failed — use autofilled Lipwa link
+    console.warn('[Payhero] API failed, falling back to Lipwa link:', data);
     return {
-      success: true,
-      message: 'STK Push initiated successfully',
+      success: false,
+      reference: ref,
+      error: data.message || `Payhero error ${response.status}`,
       data: {
-        transaction_id: data.transaction_id,
-        checkout_url: data.checkout_url,
-        status: data.status,
+        checkout_url: buildLipwaUrl(phone, amount, name, ref),
       },
     };
   } catch (error: any) {
-    console.error('Payhero STK Push Error:', error);
+    console.error('[Payhero] Network error:', error);
     return {
       success: false,
-      error: error.message || 'Failed to initiate STK Push. Please try again.',
+      reference: ref,
+      error: error.message || 'Network error. Please try again.',
+      data: {
+        checkout_url: buildLipwaUrl(phone, amount, name, ref),
+      },
     };
   }
 };
 
-// Check payment status
+export const initiateSTKPush = initiateLipwa;
+
 export const checkPaymentStatus = async (transactionId: string): Promise<STKPushResponse> => {
   try {
-    const response = await fetch(`${PAYHERO_BASE_URL}/payments/${transactionId}`, {
+    const response = await fetch(`/api/payhero/transaction-status?reference=${transactionId}`, {
       method: 'GET',
       headers: {
-        'Authorization': `Bearer ${PAYHERO_API_KEY}`,
-        'Merchant-ID': PAYHERO_MERCHANT_ID,
+        'Authorization': getAuthHeader(),
+        'x-api-key': PAYHERO_API_KEY,
+        'Merchant-ID': String(PAYHERO_CHANNEL_ID),
       },
     });
 
@@ -101,13 +184,10 @@ export const checkPaymentStatus = async (transactionId: string): Promise<STKPush
     }
 
     const data = await response.json();
-    
     return {
-      success: data.status === 'completed',
+      success: data.status === 'SUCCESS',
       message: data.message,
-      data: {
-        status: data.status,
-      },
+      data: { status: data.status },
     };
   } catch (error: any) {
     console.error('Payment Status Error:', error);
@@ -117,62 +197,3 @@ export const checkPaymentStatus = async (transactionId: string): Promise<STKPush
     };
   }
 };
-
-export { LIPWA_LINK };
-
-export const initiateLipwa = async (
-  phone: string,
-  amount: number
-): Promise<STKPushResponse> => {
-  try {
-    let formattedPhone = phone.replace(/\s/g, '');
-    if (formattedPhone.startsWith('0')) {
-      formattedPhone = '254' + formattedPhone.substring(1);
-    }
-    if (!formattedPhone.startsWith('254')) {
-      formattedPhone = '254' + formattedPhone;
-    }
-
-    const payload = {
-      phone_number: formattedPhone,
-      amount: amount,
-      reference: `HAKIKARPROVISION-${Date.now()}`,
-      description: `${PAYHERO_TILL_NAME} Service Fee`,
-      till_number: PAYHERO_TILL_NUMBER,
-    };
-
-    const response = await fetch(`${PAYHERO_BASE_URL}/lipwa`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${PAYHERO_API_KEY}`,
-        'Merchant-ID': PAYHERO_MERCHANT_ID,
-      },
-      body: JSON.stringify(payload),
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || `HTTP error ${response.status}`);
-    }
-
-    const data = await response.json();
-    
-    return {
-      success: true,
-      message: 'Lipwa initiated successfully',
-      data: {
-        checkout_url: data.checkout_url || LIPWA_LINK,
-        transaction_id: data.transaction_id,
-      },
-    };
-  } catch (error: any) {
-    console.error('Payhero Lipwa Error:', error);
-    return {
-      success: false,
-      error: error.message || 'Failed to initiate Lipwa. Please try again.',
-    };
-  }
-};
-
-
