@@ -187,8 +187,39 @@ input:focus {
   font-size: 14px;
 }
 
-.status-message.error {
-  background: rgba(234, 67, 53, 0.1);
-  color: #ea4335;
-  border: 1px solid rgba(234, 67, 53, 0.2);
+/* Luxury Page Loader */
+.loader-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--luxury-bg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.luxury-spinner {
+  width: 64px;
+  height: 64px;
+  border: 3px solid rgba(255, 255, 255, 0.05);
+  border-top: 3px solid var(--accent-emerald);
+  border-radius: 50%;
+  animation: spin 1s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  box-shadow: 0 0 30px rgba(0, 255, 136, 0.1);
+  margin-bottom: 24px;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.loader-text {
+  font-size: 14px;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  font-weight: 600;
 }

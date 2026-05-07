@@ -1,20 +1,26 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getLoanApplication, LoanApplication } from '../services/loans';
+import PageLoader from '../components/PageLoader';
 
 const Success = () => {
+  const [initialLoading, setInitialLoading] = useState(true);
   const navigate = useNavigate();
   const [loan, setLoan] = useState<LoanApplication | null>(null);
 
   useEffect(() => {
+    const timer = setTimeout(() => setInitialLoading(false), 1000);
     const fetchLoan = async () => {
       const data = await getLoanApplication();
       setLoan(data);
     };
     fetchLoan();
+    return () => clearTimeout(timer);
   }, []);
 
   const loanAmount = loan?.loanAmount || parseInt(sessionStorage.getItem('hakika_loan_limit') || '0');
+
+  if (initialLoading) return <PageLoader text="Finalizing Settlement" />;
 
   return (
     <div className="page-container bg-mesh" style={{ color: 'white', justifyContent: 'center', textAlign: 'center' }}>

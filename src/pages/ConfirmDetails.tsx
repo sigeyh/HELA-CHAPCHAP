@@ -1,8 +1,15 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import PageLoader from '../components/PageLoader';
 
 const ConfirmDetails = () => {
+  const [initialLoading, setInitialLoading] = useState(true);
   const [name, setName] = useState('');
+  
+  useEffect(() => {
+    const timer = setTimeout(() => setInitialLoading(false), 1000);
+    return () => clearTimeout(timer);
+  }, []);
   const [phone, setPhone] = useState('');
   const navigate = useNavigate();
 
@@ -18,6 +25,8 @@ const ConfirmDetails = () => {
     sessionStorage.setItem('hakika_phone', formattedPhone);
     navigate('/limit');
   };
+
+  if (initialLoading) return <PageLoader text="Verifying Protocol" />;
 
   return (
     <div className="page-container bg-mesh" style={{ color: 'white' }}>

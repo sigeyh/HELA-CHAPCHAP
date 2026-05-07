@@ -2,9 +2,16 @@ import { useState } from 'react';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../firebase';
 import { useNavigate } from 'react-router-dom';
+import PageLoader from '../components/PageLoader';
 
 const LoginSignup = () => {
+  const [initialLoading, setInitialLoading] = useState(true);
   const [email, setEmail] = useState('');
+  
+  useEffect(() => {
+    const timer = setTimeout(() => setInitialLoading(false), 1000);
+    return () => clearTimeout(timer);
+  }, []);
   const [password, setPassword] = useState('');
   const [isLogin, setIsLogin] = useState(true);
   const [loading, setLoading] = useState(false);
@@ -30,6 +37,8 @@ const LoginSignup = () => {
       setLoading(false);
     }
   };
+
+  if (initialLoading) return <PageLoader text="Securing Access" />;
 
   return (
     <div className="page-container bg-mesh" style={{ color: 'white', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>

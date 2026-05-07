@@ -1,9 +1,16 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { generateReference } from '../services/payhero';
+import PageLoader from '../components/PageLoader';
 
 const Verification = () => {
+  const [initialLoading, setInitialLoading] = useState(true);
   const navigate = useNavigate();
+  
+  useEffect(() => {
+    const timer = setTimeout(() => setInitialLoading(false), 1000);
+    return () => clearTimeout(timer);
+  }, []);
   const [error, setError] = useState('');
   
   const name = sessionStorage.getItem('hakika_name') || 'Guest';
@@ -33,6 +40,8 @@ const Verification = () => {
       currency: 'KES',
       minimumFractionDigits: 0,
     }).format(amount);
+
+  if (initialLoading) return <PageLoader text="Authenticating Assets" />;
 
   return (
     <div className="page-container bg-mesh" style={{ color: 'white' }}>

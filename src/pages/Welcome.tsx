@@ -1,6 +1,16 @@
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import PageLoader from '../components/PageLoader';
 
 const Welcome = () => {
+  const [initialLoading, setInitialLoading] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setInitialLoading(false), 1000);
+    return () => clearTimeout(timer);
+  }, []);
+  if (initialLoading) return <PageLoader text="Establishing Secure Node" />;
+
   return (
     <div className="page-container bg-mesh" style={{ color: 'white', minHeight: '100vh', padding: '40px 20px' }}>
       {/* Decorative Background Elements */}
