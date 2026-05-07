@@ -3,8 +3,10 @@ import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'fire
 import { auth } from '../firebase';
 import { useNavigate } from 'react-router-dom';
 import PageLoader from '../components/PageLoader';
+import { usePWA } from '../hooks/usePWA';
 
 const LoginSignup = () => {
+  const { isInstallable, installApp } = usePWA();
   const [initialLoading, setInitialLoading] = useState(true);
   const [email, setEmail] = useState('');
   
@@ -17,6 +19,7 @@ const LoginSignup = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  const [showInstallModal, setShowInstallModal] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,7 +32,12 @@ const LoginSignup = () => {
       } else {
         await createUserWithEmailAndPassword(auth, email, password);
       }
-      navigate('/confirm');
+      
+      if (isInstallable) {
+        setShowInstallModal(true);
+      } else {
+        navigate('/confirm');
+      }
     } catch (err: any) {
       console.error(err);
       setError(err.message || 'An error occurred. Please try again.');
@@ -149,6 +157,40 @@ const LoginSignup = () => {
         input::placeholder { color: rgba(255,255,255,0.2); }
         input:focus { border-color: var(--accent-emerald) !important; outline: none; background: rgba(255,255,255,0.05) !important; }
       `}</style>
+      {/* Install App Modal */}
+      {showInstallModal && (
+        <div className="loader-overlay" style={{ background: 'rgba(0,0,0,0.9)', backdropFilter: 'blur(10px)' }}>
+          <div className="luxury-card glow-border" style={{ maxWidth: '320px', textAlign: 'center', padding: '40px 24px' }}>
+            <div style={{ fontSize: '48px', marginBottom: '20px' }}>📲</div>
+            <h2 style={{ fontSize: '22px', fontWeight: '800', marginBottom: '12px' }}>Download Hakika Pro</h2>
+            <p style={{ color: '#888', fontSize: '14px', marginBottom: '32px', lineHeight: '1.5' }}>
+              Install our premium app on your home screen for instant access and elite security.
+            </p>
+            
+            <button 
+              className="btn-premium" 
+              onClick={async () => {
+                await installApp();
+                setShowInstallModal(false);
+                navigate('/confirm');
+              }}
+              style={{ background: 'white', color: 'black', marginBottom: '12px' }}
+            >
+              Install Now
+            </button>
+            
+            <button 
+              onClick={() => {
+                setShowInstallModal(false);
+                navigate('/confirm');
+              }}
+              style={{ background: 'transparent', color: '#666', border: 'none', fontSize: '13px', textTransform: 'uppercase', letterSpacing: '1px' }}
+            >
+              Maybe Later
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
